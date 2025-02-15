@@ -3,43 +3,46 @@ import sys, os, menu
 
 def main():
     menu.clear()
-    filename = input('Podaj nazwę pliku:\n> ')
+    filename = input('Input file name:\n> ')
 
     if not os.path.exists(filename):
-        sys.exit("Błąd: Plik nie istnieje!")
+        sys.exit("ERROR: File does not exist!")
 
-    mode = input("Wybierz tryb (encrypt/decrypt):\n> ").lower()
+    mode = input("Choose mode (encrypt/decrypt):\n> ").lower()
 
     if mode == 'encrypt':
-        pubKeyFilename = input('Podaj nazwę pliku z kluczem publicznym:\n> ')
+        pubKeyFilename = input('Input public key filename :\n> ')
         if not os.path.exists(pubKeyFilename):
-            sys.exit("Błąd: Plik z kluczem publicznym nie istnieje!")
+            sys.exit("ERROR: File does not exist!")
 
         with open(filename, 'rb') as fo:
             message = fo.read()
-        print(f'Szyfrowanie i zapisywanie do encrypted.bin...')
+        print(f'Encrypting and saving to encrypted.bin...')
         encryptAndWriteToFile(pubKeyFilename, message, filename)
 
     elif mode == 'decrypt':
-        privKeyFilename = input('Podaj nazwę pliku z kluczem prywatnym:\n> ')
+        privKeyFilename = input('Input private key filename:\n> ')
         if not os.path.exists(privKeyFilename):
-            sys.exit("Błąd: Plik z kluczem prywatnym nie istnieje!")
+            sys.exit("ERROR: File does not exist!")
 
-        print(f'Czytanie pliku {filename} i odszyfrowywanie...')
+        print(f'Reading {filename} and decrypting...')
         decryptedData, original_filename = readFromFileAndDecrypt(filename, privKeyFilename)
 
-        # Zapisz odszyfrowane dane z oryginalną nazwą pliku
+        # Save decrypted data to a file with the original filename.
         with open(original_filename, 'wb') as fo:
             fo.write(decryptedData)
-        print(f'Odszyfrowane dane zapisano w pliku: {original_filename}')
+        print(f'Decrypted data saved to: {original_filename}')
 
     else:
-        sys.exit("Błąd: Nieznany tryb. Wybierz 'encrypt' lub 'decrypt'.")
+        sys.exit("ERROR: Unknown mode. Choose 'encrypt' or 'decrypt'.")
 
 def getBlocksFromBytes(data, blockSize):
     """
-    Dzieli dane binarne na bloki o określonym rozmiarze.
-    Każdy blok jest traktowany jako liczba całkowita.
+    Divides binary data into blocks of a specified size.
+    Each block is treated as an integer.
+    :param data: binary data
+    :param blockSize: block size
+    :return: list of integers
     """
     blockInts = []
     for blockStart in range(0, len(data), blockSize):
@@ -51,7 +54,11 @@ def getBlocksFromBytes(data, blockSize):
 
 def getBytesFromBlocks(blockInts, messageLength, blockSize):
     """
-    Konwertuje bloki liczb całkowitych z powrotem na dane binarne.
+    Converts blocks of integers into binary data.
+    :param blockInts: blocks of integers
+    :param messageLength: length of the message
+    :param blockSize: block size
+    :return: binary data
     """
     message = bytearray()
     for blockInt in blockInts:
@@ -66,14 +73,23 @@ def getBytesFromBlocks(blockInts, messageLength, blockSize):
 
 def encryptMessage(message, key, blockSize):
     """
-    Szyfruje dane binarne za pomocą klucza publicznego.
+    Encrypts data using the public key.
+    :param message: message to encrypt
+    :param key: public key
+    :param blockSize: block size
+    :return: list of encrypted blocks
     """
     n, e = key
     return [pow(block, e, n) for block in getBlocksFromBytes(message, blockSize)]
 
 def decryptMessage(encryptedBlocks, messageLength, key, blockSize):
     """
-    Deszyfruje dane binarne za pomocą klucza prywatnego.
+    Decrypts binary data using the private key.
+    :param encryptedBlocks: list of encrypted blocks
+    :param messageLength: length of the message
+    :param key: private key
+    :param blockSize: block size
+    :return: decrypted binary data
     """
     n, d = key
     decryptedBlocks = [pow(block, d, n) for block in encryptedBlocks]
@@ -81,7 +97,9 @@ def decryptMessage(encryptedBlocks, messageLength, key, blockSize):
 
 def readKeyFile(keyFilename):
     """
-    Odczytuje klucz z pliku.
+    Reads key file.
+    :param keyFilename: name of the key file
+    :return: key
     """
     with open(keyFilename, 'r') as fo:
         content = fo.read()
@@ -89,23 +107,28 @@ def readKeyFile(keyFilename):
     try:
         keySize, n, EorD = map(int, content.split(','))
     except ValueError:
-        sys.exit("Błąd: Nieprawidłowy format pliku klucza!")
+        sys.exit("ERROR: Wrong format of the key file!")
 
     return (keySize, n, EorD)
 
 def encryptAndWriteToFile(keyFilename, message, original_filename, blockSize=None):
     """
-    Szyfruje dane i zapisuje je do pliku.
+    Encrypts data and writes it to a file.
+    :param keyFilename: name of the key file
+    :param message: message to encrypt
+    :param original_filename: original filename
+    :param blockSize: block size
+    :return: encrypted data
     """
     keySize, n, e = readKeyFile(keyFilename)
     if blockSize is None:
         blockSize = keySize // 8 - 1
 
     if blockSize >= keySize // 8:
-        sys.exit("ERROR: Rozmiar bloku jest zbyt duży dla klucza.")
+        sys.exit("ERROR: Block size is too large for the key.")
 
     encryptedBlocks = encryptMessage(message, (n, e), blockSize)
-    # Dodaj oryginalną nazwę pliku do zaszyfrowanych danych
+    # Add the original filename to the encrypted data.
     encryptedContent = f"{len(message)}_{blockSize}_{original_filename}_" + ",".join(map(str, encryptedBlocks))
 
     with open('encrypted.bin', 'wb') as fo:
@@ -115,7 +138,10 @@ def encryptAndWriteToFile(keyFilename, message, original_filename, blockSize=Non
 
 def readFromFileAndDecrypt(messageFilename, keyFilename):
     """
-    Odczytuje zaszyfrowane dane z pliku i deszyfruje je.
+    Reads encrypted data from a file and decrypts it.
+    :param messageFilename: name of the file with encrypted data
+    :param keyFilename: name of the key file
+    :return: decrypted data
     """
     keySize, n, d = readKeyFile(keyFilename)
 
@@ -123,17 +149,17 @@ def readFromFileAndDecrypt(messageFilename, keyFilename):
         content = fo.read().decode()
 
     try:
-        # Odczytaj długość wiadomości, rozmiar bloku i oryginalną nazwę pliku
+        # Read message length, block size, original filename and encrypted blocks.
         parts = content.split('_')
         messageLength = int(parts[0])
         blockSize = int(parts[1])
         original_filename = parts[2]
         encryptedMessage = parts[3]
     except (ValueError, IndexError):
-        sys.exit("Błąd: Uszkodzony plik szyfrogramu!")
+        sys.exit("ERROR: Damaged data!")
 
     if blockSize >= keySize // 8:
-        sys.exit("ERROR: Rozmiar bloku jest zbyt duży dla klucza.")
+        sys.exit("ERROR: Block size is too large for the key.")
 
     encryptedBlocks = list(map(int, encryptedMessage.split(',')))
 

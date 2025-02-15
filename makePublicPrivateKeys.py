@@ -4,12 +4,18 @@ import sys, os, primeNum, cryptomath, menu
 def main():
     menu.clear()
 
-    name = input('Podaj nazwę klucza:\n> ')
-    print('Tworzenie kluczy...')
+    name = input('Input key name:\n> ')
+    print('Generating keys...')
     makeKeyFiles(name, 4096)
-    print('Wygenerowano klucze.')
+    print('Keys generated.')
+
 
 def generateKey(keySize):
+    """
+    Generates public and private keys.
+    :param keySize: size of the keys
+    :return: private and public key
+    """
     d = None
 
     while d is None:
@@ -33,16 +39,21 @@ def generateKey(keySize):
 
 
 def makeKeyFiles(name, keySize=4096):
+    """
+    Saves keys to files
+    :param name: filename
+    :param keySize: size of the key
+    """
     if os.path.exists(f"{name}.pub") or os.path.exists(f"{name}"):
-        sys.exit(f'UWAGA: Plik {name}.pub lub {name} już istnieje! Użyj innej nazwy lub usuń pliki i uruchom program ponownie.')
+        sys.exit(f'WARNING: File {name}.pub or {name} already exists! Use anote name or delete the files and run the program again.')
 
     publicKey, privateKey = generateKey(keySize)
 
-    print(f'Zapisywanie klucza publicznego do pliku {name}.pub...')
+    print(f'Saving public key to {name}.pub...')
     with open(f"{name}.pub", "w") as fo:
         fo.write(f"{keySize},{publicKey[0]},{publicKey[1]}")
 
-    print(f'Zapisywanie klucza prywatnego do pliku {name}...')
+    print(f'Saving private key to {name}...')
     with open(f"{name}", "w") as fo:
         fo.write(f"{keySize},{privateKey[0]},{privateKey[1]}")
 
