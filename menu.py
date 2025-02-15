@@ -1,4 +1,4 @@
-import os
+import os, platform
 
 def mainMenu():
     print('''[1] Wygeneruj klucze
@@ -6,4 +6,4 @@ def mainMenu():
 [3] Wyjście''')
 
 def clear():
-    os.system('cls' if os.name == 'windows' else 'clear')
+    os.system('cls' if platform.system() == 'Windows' else 'clear')

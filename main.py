@@ -1,4 +1,4 @@
-import menu, makePublicPrivateKeys, publicKeyCipher
+import menu, makePublicPrivateKeys, publicKeyCipher, sys
 
 while True:
     menu.clear()
@@ -13,4 +13,4 @@ while True:
             publicKeyCipher.main()
             input('Naciśnij Enter, aby kontynuować...')
         case '3':
-            exit()
+            sys.exit()
