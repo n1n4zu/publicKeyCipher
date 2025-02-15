@@ -11,7 +11,7 @@ def main():
     mode = input("Choose mode (encrypt/decrypt):\n> ").lower()
 
     if mode == 'encrypt':
-        pubKeyFilename = input('Input public key filename :\n> ')
+        pubKeyFilename = input('Input public key filename:\n> ')
         if not os.path.exists(pubKeyFilename):
             sys.exit("ERROR: File does not exist!")
 
