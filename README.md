@@ -1,7 +1,7 @@
 # Public Key Cipher
 #### Author: n1n4zu
 #### Copyright: Copyright (C) 2025 n1n4zu
-#### License: MIT license
+#### License: This project is licensed under the [MIT License](LICENSE) - see the [LICENSE](LICENSE) file for details.
 This program was created to help you keep your data safe. With this program you can 
 generate the pair of public and private keys and encrypt and decrypt data using them.
 You can encrypt any file you want with any extension. The encrypted file will be stored
