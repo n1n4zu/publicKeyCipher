@@ -26,15 +26,11 @@ def main():
             sys.exit("ERROR: File does not exist!")
 
         print(f'Reading {filename} and decrypting...')
-        decryptedData, original_filename = readFromFileAndDecrypt(filename, privKeyFilename)
-
-        # Save decrypted data to a file with the original filename.
-        with open(original_filename, 'wb') as fo:
-            fo.write(decryptedData)
-        print(f'Decrypted data saved to: {original_filename}')
+        readFromFileAndDecrypt(filename, privKeyFilename)
 
     else:
-        sys.exit("ERROR: Unknown mode. Choose 'encrypt' or 'decrypt'.")
+        print("ERROR: Unknown mode. Choose 'encrypt' or 'decrypt'.")
+        input('Press Enter to continue...')
 
 def getBlocksFromBytes(data, blockSize):
     """
@@ -45,6 +41,8 @@ def getBlocksFromBytes(data, blockSize):
     :return: list of integers
     """
     blockInts = []
+
+    # Calculates the block integer for this block of text
     for blockStart in range(0, len(data), blockSize):
         blockInt = 0
         for i in range(blockStart, min(blockStart + blockSize, len(data))):
@@ -64,6 +62,8 @@ def getBytesFromBlocks(blockInts, messageLength, blockSize):
     for blockInt in blockInts:
         blockMessage = bytearray()
         for i in range(blockSize - 1, -1, -1):
+
+            # Decodes the message string for this block
             if len(message) + i < messageLength:
                 byte = blockInt // (256 ** i)
                 blockInt = blockInt % (256 ** i)
@@ -80,6 +80,8 @@ def encryptMessage(message, key, blockSize):
     :return: list of encrypted blocks
     """
     n, e = key
+
+    # ciphertext = plaintext ^ e mod n
     return [pow(block, e, n) for block in getBlocksFromBytes(message, blockSize)]
 
 def decryptMessage(encryptedBlocks, messageLength, key, blockSize):
@@ -92,6 +94,8 @@ def decryptMessage(encryptedBlocks, messageLength, key, blockSize):
     :return: decrypted binary data
     """
     n, d = key
+
+    # plaintext = ciphertext ^ d mod n
     decryptedBlocks = [pow(block, d, n) for block in encryptedBlocks]
     return getBytesFromBlocks(decryptedBlocks, messageLength, blockSize)
 
@@ -121,6 +125,8 @@ def encryptAndWriteToFile(keyFilename, message, original_filename, blockSize=Non
     :return: encrypted data
     """
     keySize, n, e = readKeyFile(keyFilename)
+
+    # If blockSize isn't given, set it to the largest size allowed by the key size and symbol set size.
     if blockSize is None:
         blockSize = keySize // 8 - 1
 
@@ -128,13 +134,12 @@ def encryptAndWriteToFile(keyFilename, message, original_filename, blockSize=Non
         sys.exit("ERROR: Block size is too large for the key.")
 
     encryptedBlocks = encryptMessage(message, (n, e), blockSize)
+
     # Add the original filename to the encrypted data.
     encryptedContent = f"{len(message)}_{blockSize}_{original_filename}_" + ",".join(map(str, encryptedBlocks))
 
     with open('encrypted.bin', 'wb') as fo:
         fo.write(encryptedContent.encode())
-
-    return encryptedContent
 
 def readFromFileAndDecrypt(messageFilename, keyFilename):
     """
@@ -164,4 +169,8 @@ def readFromFileAndDecrypt(messageFilename, keyFilename):
     encryptedBlocks = list(map(int, encryptedMessage.split(',')))
 
     decryptedData = decryptMessage(encryptedBlocks, messageLength, (n, d), blockSize)
-    return decryptedData, original_filename
+
+    # Save decrypted data to a file with the original filename.
+    with open(original_filename, 'wb') as fo:
+        fo.write(decryptedData)
+    print(f'Decrypted data saved to: {original_filename}')
