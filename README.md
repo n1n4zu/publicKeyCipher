@@ -9,7 +9,7 @@ in a binary file that is called **encrypted.bin** in default.<br/>
 Private key has no extension and public key has **.pub** extension.<br/>
 Remember to always use public file to encrypt data and private file to decrypt it.<br/>
 **Remember to always keep your private key in secret.**<br/>
-**Remember to never encrypt and decrypt file with the same key**
+**Remember to never encrypt and decrypt file with the same key.**
 ## How to run
 #### Remember to keep all files in the same directory.
 ### Windows
