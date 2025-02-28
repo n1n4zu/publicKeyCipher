@@ -1,15 +1,19 @@
-import os, platform
+import os
+import platform
 
-def mainMenu():
-    """
-    Displays the main menu
-    """
-    print('''[1] Generate keys
+class Menu:
+    @staticmethod
+    def mainMenu():
+        """
+Displays the main menu
+        """
+        print('''[1] Generate keys
 [2] Encrypt/Decrypt message
 [3] Exit''')
 
-def clear():
-    """
-    Clears the console
-    """
-    os.system('cls' if platform.system() == 'Windows' else 'clear')
+    @staticmethod
+    def clear():
+        """
+Clears the console
+        """
+        os.system('cls' if platform.system() == 'Windows' else 'clear')
